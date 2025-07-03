@@ -69,6 +69,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
   };
 
   const joinChat = (receiverId: string) => {
+    console.log(receiverId, "=========handleJoinChat");
     if (socketRef.current) {
       socketRef.current.emit("joinChat", { receiverId });
     }
