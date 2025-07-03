@@ -1,14 +1,14 @@
 {
   "name": "chatstorm-client",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "1.0.1",
+  "main": "src/utils/ChatSocket.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Vikas Rajput",
   "license": "ISC",
-  "description": "",
+  "description": "A real-time chat client built using Socket.IO for seamless communication. This client handles connection, message exchange, event-driven updates, and user session management in a modular and extensible structure. Designed to work with the Chatstorm server for building scalable, event-based chat applications.",
   "dependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
