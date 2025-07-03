@@ -21,18 +21,13 @@ class ChatSocket {
   }
 
   initializeSocket() {
-    if (userId) {
+    if (this.userId) {
       this.socket = io(this.serverUrl, {
         extraHeaders: {
-          token: userId,
+          token: this.userId,
         },
       });
     }
-
-    // Emit register event with userId
-    this.socket.emit("register", this.userId);
-
-    // Listen for all socket events and trigger corresponding callbacks
 
     this.socket.on("receive_message", (message) => {
       this.messages.push(message);
