@@ -58,8 +58,17 @@ import useChatSocket from 'chatstorm-client';
 ### 2.2. Retrieve  Past Messages With User.
 
 ```
-    joinChat({
+    retrieveMessages({
       receiverId: '680868132c1c4b2ea5072061',
+      keyword:""
+    });
+```
+
+### 2.3. Retrieve Available Chats.
+
+```
+    getChatList({
+      keyword: "",
     });
 ```
 
