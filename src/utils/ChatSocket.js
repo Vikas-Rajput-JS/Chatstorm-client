@@ -29,6 +29,7 @@ class ChatSocket {
       });
     }
 
+    // Register socket listeners (users do not need to handle this directly)
     this.socket.on("receive_message", (message) => {
       this.messages.push(message);
       if (this.callbacks.messageReceived) {
@@ -67,6 +68,8 @@ class ChatSocket {
     });
   }
 
+  // Exposed methods for the users
+
   sendMessage(received, message) {
     if (this.socket) {
       this.socket.emit("send_message", {
@@ -86,9 +89,7 @@ class ChatSocket {
     return this.messages;
   }
 
-  // ===============================
-  // === Callback Registration APIs
-  // ===============================
+  // Callback Registration Methods
   setHandshakeSuccessCallback(callback) {
     this.callbacks.handshakeSuccess = callback;
   }
@@ -111,20 +112,6 @@ class ChatSocket {
 
   setMessageUpdateCallback(callback) {
     this.callbacks.messageUpdate = callback;
-  }
-
-  get methods() {
-    return {
-      chatSocket: this,
-      sendMessage: this.sendMessage.bind(this),
-      getMessages: this.getMessages.bind(this),
-      setHandshakeSuccessCallback: this.setHandshakeSuccessCallback.bind(this),
-      setMessageReceivedCallback: this.setMessageReceivedCallback.bind(this),
-      setMessageSentCallback: this.setMessageSentCallback.bind(this),
-      setRetrieveMessagesCallback: this.setRetrieveMessagesCallback.bind(this),
-      setChatListCallback: this.setChatListCallback.bind(this),
-      setMessageUpdateCallback: this.setMessageUpdateCallback.bind(this),
-    };
   }
 }
 
