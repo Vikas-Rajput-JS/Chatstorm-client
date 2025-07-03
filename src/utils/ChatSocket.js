@@ -21,7 +21,13 @@ class ChatSocket {
   }
 
   initializeSocket() {
-    this.socket = io(this.serverUrl);
+    if (userId) {
+      this.socket = io(this.serverUrl, {
+        extraHeaders: {
+          token: userId,
+        },
+      });
+    }
 
     // Emit register event with userId
     this.socket.emit("register", this.userId);
