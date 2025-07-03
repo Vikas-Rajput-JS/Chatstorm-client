@@ -80,12 +80,16 @@ const useChatSocket = (serverUrl: string, userId: string) => {
         }
       });
 
+      socketRef.current.on("retrieve_message", (data: any) => {
+        if (callbacks.retrieveAllMessages) {
+          callbacks.retrieveAllMessages(data);
+        }
+      });
       socketRef.current.on("message_sent", (data: any) => {
         if (callbacks.messageSent) {
           callbacks.messageSent(data);
         }
       });
-
       socketRef.current.on("chatlist", (data: any) => {
         if (callbacks.chatList) {
           callbacks.chatList(data);
