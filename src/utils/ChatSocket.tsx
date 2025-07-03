@@ -1,17 +1,60 @@
 import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 
+// Interfaces for function parameters
+interface SendMessageParams {
+  receiverId: string;
+  message: string;
+}
+
+interface JoinChatParams {
+  receiverId: string;
+}
+
+interface TypingAlertParams {
+  receiverId: string;
+  isTyping: boolean;
+}
+
+interface DeleteMessageParams {
+  messageId: string;
+}
+
+interface RetrieveMessagesParams {
+  receiverId: string;
+  keyword: string;
+}
+
+interface CallbackFunction<T = any> {
+  (data: T): void;
+}
+
+interface Callbacks {
+  handshakeSuccess: CallbackFunction | null;
+  messageReceived: CallbackFunction | null;
+  messageSent: CallbackFunction | null;
+  retrieveMessages: CallbackFunction | null;
+  chatList: CallbackFunction | null;
+  messageUpdate: CallbackFunction | null;
+  messageUpdateReceiver: CallbackFunction | null;
+  typingAlert: CallbackFunction | null;
+  onLeave: CallbackFunction | null;
+}
+
 const useChatSocket = (serverUrl: string, userId: string) => {
   const socketRef = useRef<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
 
-  const [callbacks, setCallbacks] = useState({
+  const [callbacks, setCallbacks] = useState<Callbacks>({
     handshakeSuccess: null,
     messageReceived: null,
     messageSent: null,
     retrieveMessages: null,
     chatList: null,
     messageUpdate: null,
+    messageUpdateReceiver: null,
+    typingAlert: null,
+    onLeave: null,
   });
 
   useEffect(() => {
@@ -55,59 +98,117 @@ const useChatSocket = (serverUrl: string, userId: string) => {
         }
       });
 
-      // Cleanup when component unmounts
+      socketRef.current.on("message_update_receiver", (data: any) => {
+        if (callbacks.messageUpdateReceiver) {
+          callbacks.messageUpdateReceiver(data);
+        }
+      });
+
+      socketRef.current.on("typing_alert", (data: any) => {
+        if (callbacks.typingAlert) {
+          callbacks.typingAlert(data);
+        }
+      });
+
+      socketRef.current.on("leave", (data: any) => {
+        if (callbacks.onLeave) {
+          callbacks.onLeave(data);
+        }
+      });
+
       return () => {
+        socketRef.current.emit("disconnect_user");
         socketRef.current.disconnect();
       };
     }
   }, [serverUrl, userId, callbacks]);
 
-  const sendMessage = (receiverId: string, message: string) => {
+  // Typings for function arguments and returns
+  const sendMessage = ({ receiverId, message }: SendMessageParams) => {
     if (socketRef.current) {
       socketRef.current.emit("send_message", { receiverId, message });
     }
   };
 
-  const joinChat = (receiverId: string) => {
+  const joinChat = ({ receiverId }: JoinChatParams) => {
     if (socketRef.current) {
       socketRef.current.emit("joinchat", { receiverId });
     }
   };
 
-  const setHandshakeSuccessCallback = (callback: Function) => {
+  const updateTypingAlert = ({ receiverId, isTyping }: TypingAlertParams) => {
+    if (socketRef.current) {
+      socketRef.current.emit("typing_alert", {
+        receiverId,
+        type: isTyping ? "user_typing" : "typing_stopped",
+      });
+    }
+  };
+
+  const deleteMessage = ({ messageId }: DeleteMessageParams) => {
+    if (socketRef.current) {
+      socketRef.current.emit("delete_message", {
+        messageId,
+      });
+    }
+  };
+
+  const retrieveMessages = ({ receiverId, keyword }: RetrieveMessagesParams) => {
+    if (socketRef.current) {
+      socketRef.current.emit("chat_message", {
+        receiverId,
+        keyword,
+      });
+    }
+  };
+
+  const setHandshakeSuccessCallback = (callback: CallbackFunction) => {
     setCallbacks((prev) => ({ ...prev, handshakeSuccess: callback }));
   };
 
-  const setMessageReceivedCallback = (callback: Function) => {
+  const setMessageReceivedCallback = (callback: CallbackFunction) => {
     setCallbacks((prev) => ({ ...prev, messageReceived: callback }));
   };
 
-  const setMessageSentCallback = (callback: Function) => {
+  const setMessageSentCallback = (callback: CallbackFunction) => {
     setCallbacks((prev) => ({ ...prev, messageSent: callback }));
   };
 
-  const setRetrieveMessagesCallback = (callback: Function) => {
+  const setRetrieveMessagesCallback = (callback: CallbackFunction) => {
     setCallbacks((prev) => ({ ...prev, retrieveMessages: callback }));
   };
 
-  const setChatListCallback = (callback: Function) => {
+  const setChatListCallback = (callback: CallbackFunction) => {
     setCallbacks((prev) => ({ ...prev, chatList: callback }));
   };
 
-  const setMessageUpdateCallback = (callback: Function) => {
+  const setMessageUpdateCallback = (callback: CallbackFunction) => {
     setCallbacks((prev) => ({ ...prev, messageUpdate: callback }));
+  };
+
+  const setReceiverMessageUpdateCallback = (callback: CallbackFunction) => {
+    setCallbacks((prev) => ({ ...prev, messageUpdateReceiver: callback }));
+  };
+
+  const setOnLeaveCallback = (callback: CallbackFunction) => {
+    setCallbacks((prev) => ({ ...prev, onLeave: callback }));
   };
 
   return {
     messages,
     sendMessage,
     joinChat,
+    updateTypingAlert,
+    deleteMessage,
+    retrieveMessages,
     setHandshakeSuccessCallback,
     setMessageReceivedCallback,
     setMessageSentCallback,
     setRetrieveMessagesCallback,
     setChatListCallback,
     setMessageUpdateCallback,
+    setReceiverMessageUpdateCallback,
+    setOnLeaveCallback,
   };
 };
 
