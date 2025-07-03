@@ -38,9 +38,7 @@ class ChatSocket {
     });
 
     this.socket.on("handshake_success", (data) => {
-      if (this.callbacks.handshakeSuccess) {
-        this.callbacks.handshakeSuccess(data);
-      }
+      this.callbacks.handshakeSuccess = data;
     });
 
     this.socket.on("retrieve_message", (data) => {
@@ -87,11 +85,6 @@ class ChatSocket {
 
   getMessages() {
     return this.messages;
-  }
-
-  // Callback Registration Methods
-  setHandshakeSuccessCallback(callback) {
-    this.callbacks.handshakeSuccess = callback;
   }
 
   setMessageReceivedCallback(callback) {
