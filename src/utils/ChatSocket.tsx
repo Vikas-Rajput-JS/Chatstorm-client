@@ -25,6 +25,10 @@ interface RetrieveMessagesParams {
   keyword: string;
 }
 
+interface ChatListParams {
+  keyword: string;
+}
+
 interface CallbackFunction<T = any> {
   (data: T): void;
 }
@@ -168,6 +172,13 @@ const useChatSocket = (serverUrl: string, userId: string) => {
       });
     }
   };
+  const getChatList = ({ keyword }: ChatListParams) => {
+    if (socketRef.current) {
+      socketRef.current.emit("get_chatlist", {
+        keyword,
+      });
+    }
+  };
 
   const setHandshakeSuccessCallback = (callback: CallbackFunction) => {
     setCallbacks((prev) => ({ ...prev, handshakeSuccess: callback }));
@@ -204,6 +215,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
   return {
     messages,
     sendMessage,
+    getChatList,
     joinChat,
     updateTypingAlert,
     deleteMessage,
