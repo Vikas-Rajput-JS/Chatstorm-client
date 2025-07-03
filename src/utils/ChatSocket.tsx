@@ -49,7 +49,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     handshakeSuccess: null,
     messageReceived: null,
     messageSent: null,
-    retrieveMessages: null,
+    retrieveAllMessages: null,
     chatList: null,
     messageUpdate: null,
     messageUpdateReceiver: null,
@@ -153,7 +153,10 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     }
   };
 
-  const retrieveMessages = ({ receiverId, keyword }: RetrieveMessagesParams) => {
+  const retrieveMessages = ({
+    receiverId,
+    keyword,
+  }: RetrieveMessagesParams) => {
     if (socketRef.current) {
       socketRef.current.emit("chat_message", {
         receiverId,
@@ -175,7 +178,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
   };
 
   const setRetrieveMessagesCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, retrieveMessages: callback }));
+    setCallbacks((prev) => ({ ...prev, retrieveAllMessages: callback }));
   };
 
   const setChatListCallback = (callback: CallbackFunction) => {
