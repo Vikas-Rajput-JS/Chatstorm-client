@@ -5,7 +5,27 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "real-time-chat",
+    "socket-io",
+    "chat-server",
+    "realtime-messaging",
+    "socket-chat",
+    "chat-application",
+    "nodejs-chat",
+    "chat-api",
+    "private-messaging",
+    "real-time-communication",
+    "scalable-chat",
+    "messaging-service",
+    "live-chat",
+    "socket-io-chat",
+    "chat-backend",
+    "chat-system",
+    "instant-messaging",
+    "chat-server-socket",
+    "chatstorm"
+  ],
   "author": "Vikas Rajput",
   "license": "ISC",
   "description": "A real-time chat client built using Socket.IO for seamless communication. This client handles connection, message exchange, event-driven updates, and user session management in a modular and extensible structure. Designed to work with the Chatstorm server for building scalable, event-based chat applications.",
