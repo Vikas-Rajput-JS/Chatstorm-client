@@ -6,6 +6,7 @@ class ChatSocket {
     this.userId = userId;
     this.socket = null;
     this.messages = [];
+    this.JoinChat = this.joinChat;
 
     // Callback storage
     this.callbacks = {
