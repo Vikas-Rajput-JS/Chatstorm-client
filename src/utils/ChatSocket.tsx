@@ -161,6 +161,14 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     }
   };
 
+  const getChatList = ({ keyword }: ChatListParams) => {
+    if (socketRef.current) {
+      socketRef.current.emit("get_chatlist", {
+        keyword,
+      });
+    }
+  };
+
   const retrieveMessages = ({
     receiverId,
     keyword,
@@ -168,13 +176,6 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     if (socketRef.current) {
       socketRef.current.emit("chat_message", {
         receiverId,
-        keyword,
-      });
-    }
-  };
-  const getChatList = ({ keyword }: ChatListParams) => {
-    if (socketRef.current) {
-      socketRef.current.emit("get_chatlist", {
         keyword,
       });
     }
