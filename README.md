@@ -196,7 +196,9 @@ const PrivateChat = () => {
     if (messageInput.trim() && currentChat) {
       sendMessage({
         receiverId: currentChat.id,
-        message: messageInput,
+        message: {
+          text:messageInput
+        },
       });
       setMessageInput('');
     }

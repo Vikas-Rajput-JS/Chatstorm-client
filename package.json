@@ -1,6 +1,6 @@
 {
   "name": "chatstorm-client",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "main": "src/utils/ChatSocket.tsx",
   "types": "src/utils/ChatSocket.tsx",
   "scripts": {
@@ -43,7 +43,6 @@
     }
   },
   "dependencies": {
-    // "chatstorm-client": "^2.2.0",
     "socket.io-client": "^4.8.1"
   }
 }
