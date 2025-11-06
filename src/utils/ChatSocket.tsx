@@ -42,6 +42,7 @@ interface Callbacks {
   messageReceived: CallbackFunction | null;
   messageSent: CallbackFunction | null;
   retrieveMessages: CallbackFunction | null;
+  retrieveAllMessages: CallbackFunction | null;
   chatList: CallbackFunction | null;
   messageUpdate: CallbackFunction | null;
   messageUpdateReceiver: CallbackFunction | null;
@@ -55,6 +56,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     handshakeSuccess: null,
     messageReceived: null,
     messageSent: null,
+    retrieveMessages: null,
     retrieveAllMessages: null,
     chatList: null,
     messageUpdate: null,
@@ -67,22 +69,26 @@ const useChatSocket = (serverUrl: string, userId: string) => {
   useEffect(() => {
     // Initialize socket connection
     if (userId) {
+          console.log(userId, "userId in chat socket");
+
       // React Native compatible Socket.IO configuration
       socketRef.current = io(serverUrl, {
-        transports: ["websocket", "polling"], // Support both transports for React Native
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
+        // transports: ["websocket", "polling"], // Support both transports for React Native
+        // reconnection: true,
+        // reconnectionDelay: 1000,
+        // reconnectionAttempts: 5,
         extraHeaders: {
           token: userId,
+          Authorization: `Bearer ${userId}`,
         },
+        
       });
 
       // Listen to socket events
-      socketRef.current.on("receive_message", (message: any) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
+      socketRef.current.on("receive_message", (data: any) => {
+        setMessages((prevMessages) => [...prevMessages, data]);
         if (callbacksRef.current.messageReceived) {
-          callbacksRef.current.messageReceived(message);
+          callbacksRef.current.messageReceived(data);
         }
       });
 
@@ -98,6 +104,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
         }
       });
       socketRef.current.on("message_sent", (data: any) => {
+
         if (callbacksRef.current.messageSent) {
           callbacksRef.current.messageSent(data);
         }

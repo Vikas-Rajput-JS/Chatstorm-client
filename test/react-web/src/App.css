@@ -1,0 +1,171 @@
+.app {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.container {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+h2 {
+  color: #555;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-size: 1.2em;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.config-section,
+.actions-section,
+.message-section,
+.messages-section {
+  margin-bottom: 32px;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #666;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.status {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status .connected {
+  color: #28a745;
+}
+
+.status .disconnected {
+  color: #dc3545;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.message-section button {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.messages-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 12px;
+  background: #f8f9fa;
+}
+
+.no-messages {
+  text-align: center;
+  color: #999;
+  padding: 40px;
+  font-style: italic;
+}
+
+.message-item {
+  background: white;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.message-header strong {
+  color: #333;
+}
+
+.message-time {
+  color: #999;
+  font-size: 0.85em;
+}
+
+.message-content {
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.message-link,
+.message-media {
+  margin-top: 8px;
+  font-size: 0.9em;
+}
+
+.message-link a,
+.message-media a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.message-link a:hover,
+.message-media a:hover {
+  text-decoration: underline;
+}
+

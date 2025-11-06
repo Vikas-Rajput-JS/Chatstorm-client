@@ -3,6 +3,9 @@ app.tsx
 inde.html
 *.html
 
+# Test projects
+test/
+
 # Dependencies
 node_modules/
 
