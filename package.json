@@ -1,7 +1,8 @@
 {
   "name": "chatstorm-client",
-  "version": "2.0.8",
+  "version": "2.2.0",
   "main": "src/utils/ChatSocket.tsx",
+  "types": "src/utils/ChatSocket.tsx",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,14 +25,24 @@
     "chat-system",
     "instant-messaging",
     "chat-server-socket",
-    "chatstorm"
+    "chatstorm",
+    "react-native",
+    "react-native-chat",
+    "mobile-chat"
   ],
   "author": "Vikas Rajput",
   "license": "ISC",
-  "description": "A real-time chat client built using Socket.IO for seamless communication. This client handles connection, message exchange, event-driven updates, and user session management in a modular and extensible structure. Designed to work with the Chatstorm server for building scalable, event-based chat applications.",
+  "description": "A real-time chat client built using Socket.IO for seamless communication. Compatible with both React and React Native. This client handles connection, message exchange, event-driven updates, and user session management in a modular and extensible structure. Designed to work with the Chatstorm server for building scalable, event-based chat applications.",
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "socket.io-client": "^4.8.1"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
+  },
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
     "socket.io-client": "^4.8.1"
   }
 }

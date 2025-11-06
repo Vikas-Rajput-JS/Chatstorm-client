@@ -1,0 +1,40 @@
+# Development files
+app.tsx
+inde.html
+*.html
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+test/
+
+# Config files (keep package.json and README)
+.gitignore
+.npmignore
+.eslintrc*
+.prettierrc*
+tsconfig.json
+jest.config.*
+

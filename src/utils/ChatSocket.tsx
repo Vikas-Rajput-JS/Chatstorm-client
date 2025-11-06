@@ -1,10 +1,14 @@
-import { useEffect, useState, useRef } from "react";
-import { io } from "socket.io-client";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
 
 // Interfaces for function parameters
 interface SendMessageParams {
   receiverId: string;
-  message: string;
+  message: {
+    text: string;
+    link: string;
+    media: string;
+  };
 }
 
 interface JoinChatParams {
@@ -46,10 +50,8 @@ interface Callbacks {
 }
 
 const useChatSocket = (serverUrl: string, userId: string) => {
-  const socketRef = useRef<any>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-
-  const [callbacks, setCallbacks] = useState<Callbacks>({
+  const socketRef = useRef<Socket | null>(null);
+  const callbacksRef = useRef<Callbacks>({
     handshakeSuccess: null,
     messageReceived: null,
     messageSent: null,
@@ -60,11 +62,17 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     typingAlert: null,
     onLeave: null,
   });
+  const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
     // Initialize socket connection
     if (userId) {
+      // React Native compatible Socket.IO configuration
       socketRef.current = io(serverUrl, {
+        transports: ["websocket", "polling"], // Support both transports for React Native
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
         extraHeaders: {
           token: userId,
         },
@@ -73,63 +81,65 @@ const useChatSocket = (serverUrl: string, userId: string) => {
       // Listen to socket events
       socketRef.current.on("receive_message", (message: any) => {
         setMessages((prevMessages) => [...prevMessages, message]);
-        if (callbacks.messageReceived) {
-          callbacks.messageReceived(message);
+        if (callbacksRef.current.messageReceived) {
+          callbacksRef.current.messageReceived(message);
         }
       });
 
       socketRef.current.on("handshake_success", (data: any) => {
-        if (callbacks.handshakeSuccess) {
-          callbacks.handshakeSuccess(data);
+        if (callbacksRef.current.handshakeSuccess) {
+          callbacksRef.current.handshakeSuccess(data);
         }
       });
 
       socketRef.current.on("retrieve_message", (data: any) => {
-        if (callbacks.retrieveAllMessages) {
-          callbacks.retrieveAllMessages(data);
+        if (callbacksRef.current.retrieveAllMessages) {
+          callbacksRef.current.retrieveAllMessages(data);
         }
       });
       socketRef.current.on("message_sent", (data: any) => {
-        if (callbacks.messageSent) {
-          callbacks.messageSent(data);
+        if (callbacksRef.current.messageSent) {
+          callbacksRef.current.messageSent(data);
         }
       });
       socketRef.current.on("chatlist", (data: any) => {
-        if (callbacks.chatList) {
-          callbacks.chatList(data);
+        if (callbacksRef.current.chatList) {
+          callbacksRef.current.chatList(data);
         }
       });
 
       socketRef.current.on("message_update", (data: any) => {
-        if (callbacks.messageUpdate) {
-          callbacks.messageUpdate(data);
+        if (callbacksRef.current.messageUpdate) {
+          callbacksRef.current.messageUpdate(data);
         }
       });
 
       socketRef.current.on("message_update_receiver", (data: any) => {
-        if (callbacks.messageUpdateReceiver) {
-          callbacks.messageUpdateReceiver(data);
+        if (callbacksRef.current.messageUpdateReceiver) {
+          callbacksRef.current.messageUpdateReceiver(data);
         }
       });
 
       socketRef.current.on("typing_alert", (data: any) => {
-        if (callbacks.typingAlert) {
-          callbacks.typingAlert(data);
+        if (callbacksRef.current.typingAlert) {
+          callbacksRef.current.typingAlert(data);
         }
       });
 
       socketRef.current.on("leave", (data: any) => {
-        if (callbacks.onLeave) {
-          callbacks.onLeave(data);
+        if (callbacksRef.current.onLeave) {
+          callbacksRef.current.onLeave(data);
         }
       });
 
       return () => {
-        socketRef.current.emit("disconnect_user");
-        socketRef.current.disconnect();
+        if (socketRef.current) {
+          socketRef.current.emit("disconnect_user");
+          socketRef.current.disconnect();
+        }
       };
     }
-  }, [serverUrl, userId, callbacks]);
+  }, [serverUrl, userId]);
 
   // Typings for function arguments and returns
   const sendMessage = ({ receiverId, message }: SendMessageParams) => {
@@ -181,37 +191,53 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     }
   };
 
-  const setHandshakeSuccessCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, handshakeSuccess: callback }));
-  };
+  const setHandshakeSuccessCallback = useCallback(
+    (callback: CallbackFunction) => {
+      callbacksRef.current.handshakeSuccess = callback;
+    },
+    []
+  );
 
-  const setMessageReceivedCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, messageReceived: callback }));
-  };
+  const setMessageReceivedCallback = useCallback(
+    (callback: CallbackFunction) => {
+      callbacksRef.current.messageReceived = callback;
+    },
+    []
+  );
 
-  const setMessageSentCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, messageSent: callback }));
-  };
+  const setMessageSentCallback = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.messageSent = callback;
+  }, []);
 
-  const setRetrieveMessagesCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, retrieveAllMessages: callback }));
-  };
+  const setRetrieveMessagesCallback = useCallback(
+    (callback: CallbackFunction) => {
+      callbacksRef.current.retrieveAllMessages = callback;
+    },
+    []
+  );
 
-  const setChatListCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, chatList: callback }));
-  };
+  const setChatListCallback = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.chatList = callback;
+  }, []);
 
-  const setMessageUpdateCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, messageUpdate: callback }));
-  };
+  const setMessageUpdateCallback = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.messageUpdate = callback;
+  }, []);
 
-  const setReceiverMessageUpdateCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, messageUpdateReceiver: callback }));
-  };
+  const setReceiverMessageUpdateCallback = useCallback(
+    (callback: CallbackFunction) => {
+      callbacksRef.current.messageUpdateReceiver = callback;
+    },
+    []
+  );
 
-  const setOnLeaveCallback = (callback: CallbackFunction) => {
-    setCallbacks((prev) => ({ ...prev, onLeave: callback }));
-  };
+  const setTypingAlertCallback = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.typingAlert = callback;
+  }, []);
+
+  const setOnLeaveCallback = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.onLeave = callback;
+  }, []);
 
   return {
     messages,
@@ -228,6 +254,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     setChatListCallback,
     setMessageUpdateCallback,
     setReceiverMessageUpdateCallback,
+    setTypingAlertCallback,
     setOnLeaveCallback,
   };
 };

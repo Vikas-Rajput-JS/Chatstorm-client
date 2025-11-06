@@ -1,6 +1,6 @@
 # ChatStorm Client
 
-A powerful React hook for real-time chat functionality using Socket.IO. ChatStorm Client provides an easy-to-use interface for integrating socket-based messaging into your React applications with comprehensive event handling and callback systems.
+A powerful React hook for real-time chat functionality using Socket.IO. ChatStorm Client provides an easy-to-use interface for integrating socket-based messaging into your **React** and **React Native** applications with comprehensive event handling and callback systems.
 
 ## 🚀 Features
 
@@ -26,11 +26,32 @@ npm install chatstorm-client
 
 Make sure you have the following dependencies installed:
 
+**For React:**
 ```bash
 npm install react react-dom socket.io-client
 ```
 
+**For React Native:**
+```bash
+npm install react socket.io-client
+# react-dom is not needed for React Native
+```
+
 ## 🏃‍♂️ Quick Start
+
+### React Native Setup
+
+For React Native projects, you may need to install additional polyfills for Socket.IO:
+
+```bash
+npm install react-native-get-random-values
+```
+
+Then import it at the top of your entry file (usually `index.js` or `App.js`):
+
+```js
+import 'react-native-get-random-values';
+```
 
 ### Basic Setup
 
@@ -123,6 +144,7 @@ useChatSocket(serverUrl: string, userId: string)
 | `setRetrieveMessagesCallback` | Called when messages are retrieved |
 | `setMessageUpdateCallback` | Called when a message is updated |
 | `setReceiverMessageUpdateCallback` | Called when receiver updates a message |
+| `setTypingAlertCallback` | Called when typing status is received |
 | `setOnLeaveCallback` | Called when a user leaves the chat |
 
 ### State
@@ -407,6 +429,118 @@ const GroupChat = () => {
 };
 ```
 
+## 📱 React Native Example
+
+Here's a complete example for React Native:
+
+```tsx
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import useChatSocket from 'chatstorm-client';
+
+const ChatScreen = () => {
+  const [messageInput, setMessageInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const BACKEND_SOCKET_URL = 'ws://your-server.com';
+  const USER_ID = 'your-user-id';
+
+  const {
+    messages,
+    sendMessage,
+    joinChat,
+    setMessageReceivedCallback,
+    setHandshakeSuccessCallback,
+  } = useChatSocket(BACKEND_SOCKET_URL, USER_ID);
+
+  useEffect(() => {
+    setHandshakeSuccessCallback((data) => {
+      console.log('Connected:', data);
+      // Join a chat after connection
+      joinChat({ receiverId: 'target-user-id' });
+    });
+
+    setMessageReceivedCallback((message) => {
+      setChatMessages((prev) => [...prev, message]);
+    });
+  }, []);
+
+  const handleSend = () => {
+    if (messageInput.trim()) {
+      sendMessage({
+        receiverId: 'target-user-id',
+        message: messageInput,
+      });
+      setMessageInput('');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={chatMessages}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.messageContainer}>
+            <Text style={styles.messageText}>{item.message}</Text>
+          </View>
+        )}
+      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          value={messageInput}
+          onChangeText={setMessageInput}
+          placeholder="Type a message..."
+        />
+        <TouchableOpacity onPress={handleSend} style={styles.button}>
+          <Text style={styles.buttonText}>Send</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+  messageContainer: {
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+  },
+  messageText: {
+    fontSize: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 10,
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});
+
+export default ChatScreen;
+```
+
 ## 🔧 Advanced Configuration
 
 ### Custom Event Handling
@@ -459,6 +593,28 @@ const AdvancedChat = () => {
    // Ensure your server URL is correct and accessible
    const serverUrl = 'ws://localhost:3001'; // or 'wss://' for secure connections
    ```
+
+### React Native Specific Issues
+
+1. **Socket.IO Connection Issues in React Native**
+   - Make sure you've installed `react-native-get-random-values` and imported it at the top of your entry file
+   - For Android, ensure you have internet permissions in `AndroidManifest.xml`:
+     ```xml
+     <uses-permission android:name="android.permission.INTERNET" />
+     ```
+   - For iOS, ensure your server URL uses `http://` or `https://` instead of `ws://` or `wss://` in some cases
+   - The package automatically configures transports for React Native compatibility
+
+2. **Metro Bundler Issues**
+   - If you encounter module resolution errors, try clearing the Metro cache:
+     ```bash
+     npx react-native start --reset-cache
+     ```
+
+3. **Network Requests Blocked**
+   - For Android 9+, you may need to configure network security:
+     - Add `android:usesCleartextTraffic="true"` to `AndroidManifest.xml` for HTTP connections
+     - Or use HTTPS/WSS for production
 
 2. **Messages Not Received**
    ```tsx
