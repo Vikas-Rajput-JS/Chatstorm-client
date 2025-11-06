@@ -674,10 +674,10 @@ For support and questions, please open an issue on the GitHub repository.
 ## 🔽 Download Examples (ZIP)
 
 - **React Web Example ZIP**  
-  👉 https://download-directory.github.io/Vikas-Rajput-JS/Chatstorm-client/tree/master/src/utils
+  👉 https://github.com/Vikas-Rajput-JS/Chatstorm-client/raw/refs/heads/master/test/react-web.zip
 
 - **React Native Example ZIP**  
-  👉 https://download-directory.github.io/<username>/<repo>/tree/main/test/native
+  👉 https://github.com/Vikas-Rajput-JS/Chatstorm-client/raw/refs/heads/master/test/native.zip
 
 
 **Made with ❤️ by Vikas Rajput**
