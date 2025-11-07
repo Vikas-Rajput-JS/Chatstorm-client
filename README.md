@@ -10,7 +10,9 @@ A powerful React hook for real-time chat functionality using Socket.IO. ChatStor
 - **Typing Indicators**: Real-time typing status notifications
 - **Message History**: Retrieve and search past conversations
 - **Chat Management**: Join chats, get chat lists, and manage conversations
-- **Message Operations**: Send, delete, and update messages
+- **Message Operations**: Send, delete, and update messages (supports text, links, and media)
+- **Online Status**: Check if users are online in real-time
+- **Error Handling**: Built-in error notification system
 - **TypeScript Support**: Full TypeScript definitions included
 - **Auto-reconnection**: Automatic connection handling and cleanup
 
@@ -71,6 +73,7 @@ const ChatComponent = () => {
     retrieveMessages,
     updateTypingAlert,
     deleteMessage,
+    checkOnlineStatus,
     setHandshakeSuccessCallback,
     setMessageReceivedCallback,
     setChatListCallback,
@@ -78,7 +81,10 @@ const ChatComponent = () => {
     setMessageSentCallback,
     setMessageUpdateCallback,
     setReceiverMessageUpdateCallback,
+    setTypingAlertCallback,
     setOnLeaveCallback,
+    setOnCheckOnlineStatus,
+    setOnErrorNotify,
   } = useChatSocket(BACKEND_SOCKET_URL, MONGO_USER_ID);
 
   // Set up event callbacks
@@ -97,6 +103,14 @@ const ChatComponent = () => {
 
     setRetrieveMessagesCallback((messages) => {
       console.log('Messages retrieved:', messages);
+    });
+
+    setOnCheckOnlineStatus((data) => {
+      console.log('Online status:', data);
+    });
+
+    setOnErrorNotify((error) => {
+      console.error('Error notification:', error);
     });
   }, []);
 
@@ -126,12 +140,13 @@ useChatSocket(serverUrl: string, userId: string)
 
 | Function | Parameters | Description |
 |----------|------------|-------------|
-| `sendMessage` | `{ receiverId: string, message: string }` | Send a message to a specific user |
+| `sendMessage` | `{ receiverId: string, message: { text: string, link: string, media: string } }` | Send a message to a specific user (supports text, link, and media) |
 | `joinChat` | `{ receiverId: string }` | Join a chat with another user |
 | `getChatList` | `{ keyword: string }` | Retrieve list of available chats |
 | `retrieveMessages` | `{ receiverId: string, keyword: string }` | Get message history with a user |
 | `updateTypingAlert` | `{ receiverId: string, isTyping: boolean }` | Send typing status |
 | `deleteMessage` | `{ messageId: string }` | Delete a specific message |
+| `checkOnlineStatus` | `{ receiverId: string }` | Check if a user is online |
 
 #### Callback Setters
 
@@ -146,6 +161,8 @@ useChatSocket(serverUrl: string, userId: string)
 | `setReceiverMessageUpdateCallback` | Called when receiver updates a message |
 | `setTypingAlertCallback` | Called when typing status is received |
 | `setOnLeaveCallback` | Called when a user leaves the chat |
+| `setOnCheckOnlineStatus` | Called when online status is received |
+| `setOnErrorNotify` | Called when an error notification is received |
 
 ### State
 
@@ -197,7 +214,9 @@ const PrivateChat = () => {
       sendMessage({
         receiverId: currentChat.id,
         message: {
-          text:messageInput
+          text: messageInput,
+          link: '',
+          media: '',
         },
       });
       setMessageInput('');
@@ -343,7 +362,11 @@ const CustomerSupport = () => {
           if (e.key === 'Enter') {
             sendMessage({
               receiverId: 'support-agent-001',
-              message: e.target.value,
+              message: {
+                text: e.target.value,
+                link: '',
+                media: '',
+              },
             });
             e.target.value = '';
           }
@@ -393,7 +416,11 @@ const GroupChat = () => {
       groupMembers.forEach(member => {
         sendMessage({
           receiverId: member.id,
-          message: messageInput,
+          message: {
+            text: messageInput,
+            link: '',
+            media: '',
+          },
         });
       });
       setMessageInput('');
@@ -470,7 +497,11 @@ const ChatScreen = () => {
     if (messageInput.trim()) {
       sendMessage({
         receiverId: 'target-user-id',
-        message: messageInput,
+        message: {
+          text: messageInput,
+          link: '',
+          media: '',
+        },
       });
       setMessageInput('');
     }
@@ -553,7 +584,10 @@ const AdvancedChat = () => {
     setMessageUpdateCallback,
     setReceiverMessageUpdateCallback,
     setOnLeaveCallback,
+    setOnCheckOnlineStatus,
+    setOnErrorNotify,
     deleteMessage,
+    checkOnlineStatus,
   } = useChatSocket('ws://localhost:3001', 'user123');
 
   React.useEffect(() => {
@@ -572,10 +606,24 @@ const AdvancedChat = () => {
       console.log('User left:', data);
       // Handle user leaving the chat
     });
+
+    setOnCheckOnlineStatus((data) => {
+      console.log('User online status:', data);
+      // Handle online status updates
+    });
+
+    setOnErrorNotify((error) => {
+      console.error('Error occurred:', error);
+      // Handle error notifications
+    });
   }, []);
 
   const handleDeleteMessage = (messageId) => {
     deleteMessage({ messageId });
+  };
+
+  const handleCheckOnline = (receiverId) => {
+    checkOnlineStatus({ receiverId });
   };
 
   return (
@@ -654,7 +702,45 @@ useEffect(() => {
   setChatListCallback((chatList) => {
     console.log('💬 Chat list updated:', chatList);
   });
+
+  setOnCheckOnlineStatus((data) => {
+    console.log('🟢 Online status:', data);
+  });
+
+  setOnErrorNotify((error) => {
+    console.error('❌ Error notification:', error);
+  });
 }, []);
+```
+
+### Online Status Example
+
+Check if a user is online:
+
+```tsx
+const ChatWithOnlineStatus = () => {
+  const [isOnline, setIsOnline] = useState(false);
+  const { checkOnlineStatus, setOnCheckOnlineStatus } = useChatSocket('ws://localhost:3001', 'user123');
+
+  useEffect(() => {
+    setOnCheckOnlineStatus((data) => {
+      setIsOnline(data.isOnline || false);
+    });
+  }, []);
+
+  const handleCheckStatus = (receiverId) => {
+    checkOnlineStatus({ receiverId });
+  };
+
+  return (
+    <div>
+      <button onClick={() => handleCheckStatus('target-user-id')}>
+        Check Online Status
+      </button>
+      {isOnline ? <span>🟢 Online</span> : <span>🔴 Offline</span>}
+    </div>
+  );
+};
 ```
 
 ## 📄 License

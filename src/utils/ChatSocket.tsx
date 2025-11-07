@@ -32,6 +32,9 @@ interface RetrieveMessagesParams {
 interface ChatListParams {
   keyword: string;
 }
+interface CheckOnlineStatusParams {
+  receiverId: string;
+}
 
 interface CallbackFunction<T = any> {
   (data: T): void;
@@ -48,6 +51,8 @@ interface Callbacks {
   messageUpdateReceiver: CallbackFunction | null;
   typingAlert: CallbackFunction | null;
   onLeave: CallbackFunction | null;
+  onCheckOnlineStatus?: CallbackFunction | null;
+  errorNotify: CallbackFunction | null;
 }
 
 const useChatSocket = (serverUrl: string, userId: string) => {
@@ -63,13 +68,15 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     messageUpdateReceiver: null,
     typingAlert: null,
     onLeave: null,
+    onCheckOnlineStatus: null,
+    errorNotify: null,
   });
   const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
     // Initialize socket connection
     if (userId) {
-          console.log(userId, "userId in chat socket");
+      console.log(userId, "userId in chat socket");
 
       // React Native compatible Socket.IO configuration
       socketRef.current = io(serverUrl, {
@@ -81,7 +88,6 @@ const useChatSocket = (serverUrl: string, userId: string) => {
           token: userId,
           Authorization: `Bearer ${userId}`,
         },
-        
       });
 
       // Listen to socket events
@@ -104,7 +110,6 @@ const useChatSocket = (serverUrl: string, userId: string) => {
         }
       });
       socketRef.current.on("message_sent", (data: any) => {
-
         if (callbacksRef.current.messageSent) {
           callbacksRef.current.messageSent(data);
         }
@@ -136,6 +141,17 @@ const useChatSocket = (serverUrl: string, userId: string) => {
       socketRef.current.on("leave", (data: any) => {
         if (callbacksRef.current.onLeave) {
           callbacksRef.current.onLeave(data);
+        }
+      });
+      socketRef.current.on("online_status", (data: any) => {
+        if (callbacksRef.current.onCheckOnlineStatus) {
+          callbacksRef.current.onCheckOnlineStatus(data);
+        }
+      });
+
+      socketRef.current.on("error_notify", (data: any) => {
+        if (callbacksRef.current.errorNotify) {
+          callbacksRef.current.errorNotify(data);
         }
       });
 
@@ -182,6 +198,14 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     if (socketRef.current) {
       socketRef.current.emit("get_chatlist", {
         keyword,
+      });
+    }
+  };
+
+  const checkOnlineStatus = ({ receiverId }: CheckOnlineStatusParams) => {
+    if (socketRef.current) {
+      socketRef.current.emit("check_online_status", {
+        receiverId,
       });
     }
   };
@@ -246,6 +270,14 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     callbacksRef.current.onLeave = callback;
   }, []);
 
+  const setOnCheckOnlineStatus = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.onCheckOnlineStatus = callback;
+  }, []);
+
+  const setOnErrorNotify = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.errorNotify = callback;
+  }, []);
+
   return {
     messages,
     sendMessage,
@@ -254,6 +286,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     updateTypingAlert,
     deleteMessage,
     retrieveMessages,
+    checkOnlineStatus,
     setHandshakeSuccessCallback,
     setMessageReceivedCallback,
     setMessageSentCallback,
@@ -263,6 +296,8 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     setReceiverMessageUpdateCallback,
     setTypingAlertCallback,
     setOnLeaveCallback,
+    setOnCheckOnlineStatus,
+    setOnErrorNotify,
   };
 };
 
