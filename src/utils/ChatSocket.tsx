@@ -163,7 +163,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
 
   const updateTypingAlert = ({ receiverId, isTyping }: TypingAlertParams) => {
     if (socketRef.current) {
-      socketRef.current.emit("typing_alert", {
+      socketRef.current.emit("user_typing", {
         receiverId,
         type: isTyping ? "user_typing" : "typing_stopped",
       });
