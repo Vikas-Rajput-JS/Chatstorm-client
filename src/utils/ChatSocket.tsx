@@ -53,6 +53,7 @@ interface Callbacks {
   onLeave: CallbackFunction | null;
   onCheckOnlineStatus?: CallbackFunction | null;
   errorNotify: CallbackFunction | null;
+  onDisconnect: CallbackFunction | null;
 }
 
 const useChatSocket = (serverUrl: string, userId: string) => {
@@ -70,6 +71,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     onLeave: null,
     onCheckOnlineStatus: null,
     errorNotify: null,
+    onDisconnect: null,
   });
   const [messages, setMessages] = useState<any[]>([]);
 
@@ -155,6 +157,12 @@ const useChatSocket = (serverUrl: string, userId: string) => {
         }
       });
 
+      socketRef.current.on("leave", (data: any) => {
+        if (callbacksRef.current.onDisconnect) {
+          callbacksRef.current.onDisconnect(data);
+        }
+      });
+
       return () => {
         if (socketRef.current) {
           socketRef.current.emit("disconnect_user");
@@ -207,6 +215,12 @@ const useChatSocket = (serverUrl: string, userId: string) => {
       socketRef.current.emit("check_online_status", {
         receiverId,
       });
+    }
+  };
+
+  const disconnectUser = () => {
+    if (socketRef.current) {
+      socketRef.current.emit("disconnect_user");
     }
   };
 
@@ -278,6 +292,10 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     callbacksRef.current.errorNotify = callback;
   }, []);
 
+  const setOnDisconnect = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.onDisconnect = callback;
+  }, []);
+
   return {
     messages,
     sendMessage,
@@ -287,6 +305,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     deleteMessage,
     retrieveMessages,
     checkOnlineStatus,
+    disconnectUser,
     setHandshakeSuccessCallback,
     setMessageReceivedCallback,
     setMessageSentCallback,
@@ -298,6 +317,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     setOnLeaveCallback,
     setOnCheckOnlineStatus,
     setOnErrorNotify,
+    setOnDisconnect,
   };
 };
 

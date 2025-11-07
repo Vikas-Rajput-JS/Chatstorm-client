@@ -74,6 +74,7 @@ const ChatComponent = () => {
     updateTypingAlert,
     deleteMessage,
     checkOnlineStatus,
+    disconnectUser,
     setHandshakeSuccessCallback,
     setMessageReceivedCallback,
     setChatListCallback,
@@ -85,6 +86,7 @@ const ChatComponent = () => {
     setOnLeaveCallback,
     setOnCheckOnlineStatus,
     setOnErrorNotify,
+    setOnDisconnect,
   } = useChatSocket(BACKEND_SOCKET_URL, MONGO_USER_ID);
 
   // Set up event callbacks
@@ -111,6 +113,10 @@ const ChatComponent = () => {
 
     setOnErrorNotify((error) => {
       console.error('Error notification:', error);
+    });
+
+    setOnDisconnect((data) => {
+      console.log('Disconnected:', data);
     });
   }, []);
 
@@ -147,6 +153,7 @@ useChatSocket(serverUrl: string, userId: string)
 | `updateTypingAlert` | `{ receiverId: string, isTyping: boolean }` | Send typing status |
 | `deleteMessage` | `{ messageId: string }` | Delete a specific message |
 | `checkOnlineStatus` | `{ receiverId: string }` | Check if a user is online |
+| `disconnectUser` | `()` | Manually disconnect the user from the socket |
 
 #### Callback Setters
 
@@ -163,6 +170,7 @@ useChatSocket(serverUrl: string, userId: string)
 | `setOnLeaveCallback` | Called when a user leaves the chat |
 | `setOnCheckOnlineStatus` | Called when online status is received |
 | `setOnErrorNotify` | Called when an error notification is received |
+| `setOnDisconnect` | Called when the socket connection is disconnected |
 
 ### State
 
@@ -586,8 +594,10 @@ const AdvancedChat = () => {
     setOnLeaveCallback,
     setOnCheckOnlineStatus,
     setOnErrorNotify,
+    setOnDisconnect,
     deleteMessage,
     checkOnlineStatus,
+    disconnectUser,
   } = useChatSocket('ws://localhost:3001', 'user123');
 
   React.useEffect(() => {
@@ -616,6 +626,11 @@ const AdvancedChat = () => {
       console.error('Error occurred:', error);
       // Handle error notifications
     });
+
+    setOnDisconnect((data) => {
+      console.log('Socket disconnected:', data);
+      // Handle disconnection (e.g., show reconnection UI)
+    });
   }, []);
 
   const handleDeleteMessage = (messageId) => {
@@ -624,6 +639,10 @@ const AdvancedChat = () => {
 
   const handleCheckOnline = (receiverId) => {
     checkOnlineStatus({ receiverId });
+  };
+
+  const handleDisconnect = () => {
+    disconnectUser();
   };
 
   return (
@@ -710,6 +729,10 @@ useEffect(() => {
   setOnErrorNotify((error) => {
     console.error('❌ Error notification:', error);
   });
+
+  setOnDisconnect((data) => {
+    console.log('🔌 Disconnected:', data);
+  });
 }, []);
 ```
 
@@ -738,6 +761,35 @@ const ChatWithOnlineStatus = () => {
         Check Online Status
       </button>
       {isOnline ? <span>🟢 Online</span> : <span>🔴 Offline</span>}
+    </div>
+  );
+};
+```
+
+### Disconnect Example
+
+Manually disconnect from the socket:
+
+```tsx
+const ChatWithDisconnect = () => {
+  const { disconnectUser, setOnDisconnect } = useChatSocket('ws://localhost:3001', 'user123');
+
+  useEffect(() => {
+    setOnDisconnect((data) => {
+      console.log('Disconnected from server:', data);
+      // Handle disconnection (e.g., show offline message, clear UI)
+    });
+  }, []);
+
+  const handleLogout = () => {
+    // Disconnect before logging out
+    disconnectUser();
+    // Additional logout logic here
+  };
+
+  return (
+    <div>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 };
