@@ -26,12 +26,17 @@ interface DeleteMessageParams {
 
 interface RetrieveMessagesParams {
   receiverId: string;
-  keyword: string;
+  keyword?: string;
 }
 
 interface ChatListParams {
-  keyword: string;
+  keyword?: string;
 }
+
+interface LeaveChatParams {
+  receiverId: string;
+}
+
 interface CheckOnlineStatusParams {
   receiverId: string;
 }
@@ -54,6 +59,7 @@ interface Callbacks {
   onCheckOnlineStatus?: CallbackFunction | null;
   errorNotify: CallbackFunction | null;
   onDisconnect: CallbackFunction | null;
+  chatStatus: CallbackFunction | null;
 }
 
 const useChatSocket = (serverUrl: string, userId: string) => {
@@ -72,6 +78,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     onCheckOnlineStatus: null,
     errorNotify: null,
     onDisconnect: null,
+    chatStatus: null,
   });
   const [messages, setMessages] = useState<any[]>([]);
 
@@ -144,22 +151,26 @@ const useChatSocket = (serverUrl: string, userId: string) => {
         if (callbacksRef.current.onLeave) {
           callbacksRef.current.onLeave(data);
         }
+        if (callbacksRef.current.onDisconnect) {
+          callbacksRef.current.onDisconnect(data);
+        }
       });
+
       socketRef.current.on("online_status", (data: any) => {
         if (callbacksRef.current.onCheckOnlineStatus) {
           callbacksRef.current.onCheckOnlineStatus(data);
         }
       });
 
-      socketRef.current.on("error_notify", (data: any) => {
-        if (callbacksRef.current.errorNotify) {
-          callbacksRef.current.errorNotify(data);
+      socketRef.current.on("chat_status", (data: any) => {
+        if (callbacksRef.current.chatStatus) {
+          callbacksRef.current.chatStatus(data);
         }
       });
 
-      socketRef.current.on("leave", (data: any) => {
-        if (callbacksRef.current.onDisconnect) {
-          callbacksRef.current.onDisconnect(data);
+      socketRef.current.on("error_notify", (data: any) => {
+        if (callbacksRef.current.errorNotify) {
+          callbacksRef.current.errorNotify(data);
         }
       });
 
@@ -189,7 +200,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     if (socketRef.current) {
       socketRef.current.emit("user_typing", {
         receiverId,
-        type: isTyping ? "user_typing" : "typing_stopped",
+        type: isTyping ? "user_typing" : "stop_typing",
       });
     }
   };
@@ -233,6 +244,12 @@ const useChatSocket = (serverUrl: string, userId: string) => {
         receiverId,
         keyword,
       });
+    }
+  };
+
+  const leaveChat = ({ receiverId }: LeaveChatParams) => {
+    if (socketRef.current) {
+      socketRef.current.emit("leave_chat", { receiverId });
     }
   };
 
@@ -296,6 +313,10 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     callbacksRef.current.onDisconnect = callback;
   }, []);
 
+  const setChatStatusCallback = useCallback((callback: CallbackFunction) => {
+    callbacksRef.current.chatStatus = callback;
+  }, []);
+
   return {
     messages,
     sendMessage,
@@ -304,6 +325,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     updateTypingAlert,
     deleteMessage,
     retrieveMessages,
+    leaveChat,
     checkOnlineStatus,
     disconnectUser,
     setHandshakeSuccessCallback,
@@ -318,6 +340,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     setOnCheckOnlineStatus,
     setOnErrorNotify,
     setOnDisconnect,
+    setChatStatusCallback,
   };
 };
 

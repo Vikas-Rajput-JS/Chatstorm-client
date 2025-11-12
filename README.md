@@ -73,6 +73,7 @@ const ChatComponent = () => {
     retrieveMessages,
     updateTypingAlert,
     deleteMessage,
+    leaveChat,
     checkOnlineStatus,
     disconnectUser,
     setHandshakeSuccessCallback,
@@ -84,6 +85,7 @@ const ChatComponent = () => {
     setReceiverMessageUpdateCallback,
     setTypingAlertCallback,
     setOnLeaveCallback,
+    setChatStatusCallback,
     setOnCheckOnlineStatus,
     setOnErrorNotify,
     setOnDisconnect,
@@ -118,6 +120,14 @@ const ChatComponent = () => {
     setOnDisconnect((data) => {
       console.log('Disconnected:', data);
     });
+
+    setChatStatusCallback((data) => {
+      if (data.isJoined) {
+        console.log('User joined chat:', data.data);
+      } else if (data.isLeft) {
+        console.log('User left chat');
+      }
+    });
   }, []);
 
   return (
@@ -148,10 +158,11 @@ useChatSocket(serverUrl: string, userId: string)
 |----------|------------|-------------|
 | `sendMessage` | `{ receiverId: string, message: { text: string, link: string, media: string } }` | Send a message to a specific user (supports text, link, and media) |
 | `joinChat` | `{ receiverId: string }` | Join a chat with another user |
-| `getChatList` | `{ keyword: string }` | Retrieve list of available chats |
-| `retrieveMessages` | `{ receiverId: string, keyword: string }` | Get message history with a user |
+| `getChatList` | `{ keyword?: string }` | Retrieve list of available chats (keyword is optional) |
+| `retrieveMessages` | `{ receiverId: string, keyword?: string }` | Get message history with a user (keyword is optional, automatically marks messages as seen) |
 | `updateTypingAlert` | `{ receiverId: string, isTyping: boolean }` | Send typing status |
 | `deleteMessage` | `{ messageId: string }` | Delete a specific message |
+| `leaveChat` | `{ receiverId: string }` | Leave a chat conversation |
 | `checkOnlineStatus` | `{ receiverId: string }` | Check if a user is online |
 | `disconnectUser` | `()` | Manually disconnect the user from the socket |
 
@@ -168,6 +179,7 @@ useChatSocket(serverUrl: string, userId: string)
 | `setReceiverMessageUpdateCallback` | Called when receiver updates a message |
 | `setTypingAlertCallback` | Called when typing status is received |
 | `setOnLeaveCallback` | Called when a user leaves the chat |
+| `setChatStatusCallback` | Called when chat status changes (user joined/left) |
 | `setOnCheckOnlineStatus` | Called when online status is received |
 | `setOnErrorNotify` | Called when an error notification is received |
 | `setOnDisconnect` | Called when the socket connection is disconnected |
@@ -734,6 +746,43 @@ useEffect(() => {
     console.log('🔌 Disconnected:', data);
   });
 }, []);
+```
+
+### Chat Status Example
+
+Handle chat join/leave notifications:
+
+```tsx
+const ChatWithStatus = () => {
+  const { joinChat, leaveChat, setChatStatusCallback } = useChatSocket('ws://localhost:3001', 'user123');
+
+  useEffect(() => {
+    setChatStatusCallback((data) => {
+      if (data.isJoined) {
+        console.log('User joined:', data.data);
+        // Show notification: "User has joined the chat"
+      } else if (data.isLeft) {
+        console.log('User left the chat');
+        // Show notification: "User has left the chat"
+      }
+    });
+  }, []);
+
+  const handleJoinChat = (receiverId) => {
+    joinChat({ receiverId });
+  };
+
+  const handleLeaveChat = (receiverId) => {
+    leaveChat({ receiverId });
+  };
+
+  return (
+    <div>
+      <button onClick={() => handleJoinChat('target-user-id')}>Join Chat</button>
+      <button onClick={() => handleLeaveChat('target-user-id')}>Leave Chat</button>
+    </div>
+  );
+};
 ```
 
 ### Online Status Example
