@@ -341,6 +341,7 @@ const useChatSocket = (serverUrl: string, userId: string) => {
     setOnErrorNotify,
     setOnDisconnect,
     setChatStatusCallback,
+    socketInstance: socketRef.current,
   };
 };
 

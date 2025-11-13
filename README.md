@@ -89,6 +89,7 @@ const ChatComponent = () => {
     setOnCheckOnlineStatus,
     setOnErrorNotify,
     setOnDisconnect,
+    socketInstance,
   } = useChatSocket(BACKEND_SOCKET_URL, MONGO_USER_ID);
 
   // Set up event callbacks
